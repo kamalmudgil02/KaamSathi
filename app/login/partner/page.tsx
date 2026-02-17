@@ -1,0 +1,149 @@
+'use client';
+
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Mail, Lock, User, Phone } from 'lucide-react';
+import Navbar from '@/components/Navbar';
+
+export default function PartnerLoginPage() {
+    const router = useRouter();
+    const { login, signup } = useAuth();
+    const { t } = useLanguage();
+
+    const [isLogin, setIsLogin] = useState(true);
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        phone: '',
+    });
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        let success = false;
+        if (isLogin) {
+            success = await login(formData.email, formData.password, 'partner');
+        } else {
+            success = await signup(formData.name, formData.email, formData.password, formData.phone, 'partner');
+        }
+
+        if (success) {
+            router.push('/dashboard/partner');
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50">
+            <Navbar />
+
+            <div className="container-custom py-12">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="max-w-md mx-auto"
+                >
+                    <div className="card">
+                        {/* Header */}
+                        <div className="text-center mb-8">
+                            <h1 className="text-3xl font-bold text-neutral-800 mb-2">
+                                {t('auth.partnerTitle')}
+                            </h1>
+                            <p className="text-neutral-600">
+                                {isLogin ? 'Welcome back, Partner!' : 'Join as a Worker'}
+                            </p>
+                        </div>
+
+                        {/* Form */}
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {!isLogin && (
+                                <div>
+                                    <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 mb-2">
+                                        <User className="w-4 h-4" />
+                                        {t('auth.name')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="input-field"
+                                        required={!isLogin}
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 mb-2">
+                                    <Mail className="w-4 h-4" />
+                                    {t('auth.email')}
+                                </label>
+                                <input
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    className="input-field"
+                                    required
+                                />
+                            </div>
+
+                            {!isLogin && (
+                                <div>
+                                    <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 mb-2">
+                                        <Phone className="w-4 h-4" />
+                                        {t('auth.phone')}
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        className="input-field"
+                                        required={!isLogin}
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 mb-2">
+                                    <Lock className="w-4 h-4" />
+                                    {t('auth.password')}
+                                </label>
+                                <input
+                                    type="password"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    className="input-field"
+                                    required
+                                />
+                            </div>
+
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                type="submit"
+                                className="w-full btn-secondary"
+                            >
+                                {isLogin ? t('auth.login') : t('auth.signup')}
+                            </motion.button>
+                        </form>
+
+                        {/* Toggle Login/Signup */}
+                        <div className="mt-6 text-center">
+                            <p className="text-neutral-600">
+                                {isLogin ? t('auth.noAccount') : t('auth.haveAccount')}
+                            </p>
+                            <button
+                                onClick={() => setIsLogin(!isLogin)}
+                                className="text-secondary-600 font-medium hover:underline mt-2"
+                            >
+                                {isLogin ? t('auth.signup') : t('auth.login')}
+                            </button>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+        </div>
+    );
+}
