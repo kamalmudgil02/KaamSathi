@@ -7,26 +7,41 @@ import { revalidatePath } from 'next/cache';
 // Simple password hashing (in production, use bcrypt/argon2)
 const hashPassword = (pass: string) => Buffer.from(pass).toString('base64');
 
-export async function login(email: string, password: string, role: UserRole): Promise<User | null> {
+export type AuthResult = {
+    success: boolean;
+    user?: User;
+    error?: string;
+};
+
+export async function login(email: string, password: string, role: UserRole): Promise<AuthResult> {
     try {
         const user = await prisma.user.findUnique({
             where: { email },
         });
 
-        if (!user) return null;
+        if (!user) return { success: false, error: 'User not found.' };
 
         // Check password
-        if (user.password !== hashPassword(password)) return null;
+        if (user.password !== hashPassword(password)) return { success: false, error: 'Invalid password.' };
 
         // Check role (optional)
-        if (user.role !== role) return null;
+        if (user.role !== role) return { success: false, error: 'Invalid role for this user.' };
 
         // Return user without password
-        const { password: _, ...userWithoutPassword } = user;
-        return userWithoutPassword as User;
-    } catch (error) {
+        return {
+            success: true,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role as UserRole,
+                phone: user.phone || '', // Handle null
+                photo: user.photo || undefined,
+            }
+        };
+    } catch (error: any) {
         console.error('Login error:', error);
-        return null;
+        return { success: false, error: error.message || 'Database connection failed.' };
     }
 }
 
@@ -36,13 +51,13 @@ export async function signup(
     password: string,
     phone: string,
     role: UserRole
-): Promise<User | null> {
+): Promise<AuthResult> {
     try {
         const existingUser = await prisma.user.findUnique({
             where: { email },
         });
 
-        if (existingUser) return null;
+        if (existingUser) return { success: false, error: 'Email already registered.' };
 
         const user = await prisma.user.create({
             data: {
@@ -55,15 +70,24 @@ export async function signup(
             },
         });
 
-        const { password: _, ...userWithoutPassword } = user;
-        return userWithoutPassword as User;
-    } catch (error) {
+        return {
+            success: true,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role as UserRole,
+                phone: user.phone || '',
+                photo: user.photo || undefined,
+            }
+        };
+    } catch (error: any) {
         console.error('Signup error:', error);
-        return null;
+        return { success: false, error: error.message || 'Signup failed. Please try again.' };
     }
 }
 
-export async function updateProfile(email: string, data: Partial<User>): Promise<User | null> {
+export async function updateProfile(email: string, data: Partial<User>): Promise<AuthResult> {
     try {
         const user = await prisma.user.update({
             where: { email },
@@ -73,10 +97,19 @@ export async function updateProfile(email: string, data: Partial<User>): Promise
             },
         });
 
-        const { password: _, ...userWithoutPassword } = user;
-        return userWithoutPassword as User;
-    } catch (error) {
+        return {
+            success: true,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role as UserRole,
+                phone: user.phone || '',
+                photo: user.photo || undefined,
+            }
+        };
+    } catch (error: any) {
         console.error('Update profile error:', error);
-        return null;
+        return { success: false, error: error.message || 'Update failed.' };
     }
 }

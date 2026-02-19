@@ -27,18 +27,18 @@ export default function CustomerLoginPage() {
         e.preventDefault();
         setError('');
 
-        let success = false;
+        let result = { success: false, error: '' };
         try {
             if (isLogin) {
-                success = await login(formData.email, formData.password, 'customer');
+                result = await login(formData.email, formData.password, 'customer') as any;
             } else {
-                success = await signup(formData.name, formData.email, formData.password, formData.phone, 'customer');
+                result = await signup(formData.name, formData.email, formData.password, formData.phone, 'customer') as any;
             }
 
-            if (success) {
+            if (result.success) {
                 router.push('/dashboard/customer');
             } else {
-                setError(isLogin ? 'Invalid email or password.' : 'Signup failed. Email might be in use.');
+                setError(result.error || (isLogin ? 'Invalid email or password.' : 'Signup failed.'));
             }
         } catch (err) {
             setError('An unexpected error occurred. Please try again.');

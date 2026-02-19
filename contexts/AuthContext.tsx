@@ -6,10 +6,10 @@ import { login as loginAction, signup as signupAction, updateProfile as updatePr
 
 interface AuthContextType {
     user: User | null;
-    login: (email: string, password: string, role: UserRole) => Promise<boolean>;
-    signup: (name: string, email: string, password: string, phone: string, role: UserRole) => Promise<boolean>;
+    login: (email: string, password: string, role: UserRole) => Promise<{ success: boolean; error?: string }>;
+    signup: (name: string, email: string, password: string, phone: string, role: UserRole) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
-    updateProfile: (data: Partial<User>) => Promise<boolean>;
+    updateProfile: (data: Partial<User>) => Promise<{ success: boolean; error?: string }>;
     isAuthenticated: boolean;
 }
 
@@ -26,18 +26,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
+    const login = async (email: string, password: string, role: UserRole): Promise<{ success: boolean; error?: string }> => {
         try {
-            const user = await loginAction(email, password, role);
-            if (user) {
-                setUser(user);
-                localStorage.setItem('kaamsaathi_user', JSON.stringify(user));
-                return true;
+            const result = await loginAction(email, password, role);
+            if (result.success && result.user) {
+                setUser(result.user);
+                localStorage.setItem('kaamsaathi_user', JSON.stringify(result.user));
+                return { success: true };
             }
-            return false;
-        } catch (error) {
+            return { success: false, error: result.error || 'Login failed' };
+        } catch (error: any) {
             console.error('Login failed:', error);
-            return false;
+            return { success: false, error: error.message || 'Unexpected login error' };
         }
     };
 
@@ -47,18 +47,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password: string,
         phone: string,
         role: UserRole
-    ): Promise<boolean> => {
+    ): Promise<{ success: boolean; error?: string }> => {
         try {
-            const user = await signupAction(name, email, password, phone, role);
-            if (user) {
-                setUser(user);
-                localStorage.setItem('kaamsaathi_user', JSON.stringify(user));
-                return true;
+            const result = await signupAction(name, email, password, phone, role);
+            if (result.success && result.user) {
+                setUser(result.user);
+                localStorage.setItem('kaamsaathi_user', JSON.stringify(result.user));
+                return { success: true };
             }
-            return false;
-        } catch (error) {
+            return { success: false, error: result.error || 'Signup failed' };
+        } catch (error: any) {
             console.error('Signup failed:', error);
-            return false;
+            return { success: false, error: error.message || 'Unexpected signup error' };
         }
     };
 
@@ -67,22 +67,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('kaamsaathi_user');
     };
 
-    const updateProfile = async (data: Partial<User>): Promise<boolean> => {
+    const updateProfile = async (data: Partial<User>): Promise<{ success: boolean; error?: string }> => {
         try {
-            if (!user) return false;
+            if (!user) return { success: false, error: 'No user logged in' };
 
             // We need email to identify the user in DB
-            const updatedUser = await updateProfileAction(user.email, data);
+            const result = await updateProfileAction(user.email, data);
 
-            if (updatedUser) {
-                setUser(updatedUser);
-                localStorage.setItem('kaamsaathi_user', JSON.stringify(updatedUser));
-                return true;
+            if (result.success && result.user) {
+                setUser(result.user);
+                localStorage.setItem('kaamsaathi_user', JSON.stringify(result.user));
+                return { success: true };
             }
-            return false;
-        } catch (error) {
+            return { success: false, error: result.error || 'Update failed' };
+        } catch (error: any) {
             console.error('Update profile failed:', error);
-            return false;
+            return { success: false, error: error.message || 'Unexpected update error' };
         }
     };
 

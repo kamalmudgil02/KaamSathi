@@ -27,18 +27,18 @@ export default function PartnerLoginPage() {
         e.preventDefault();
         setError('');
 
-        let success = false;
+        let result = { success: false, error: '' };
         try {
             if (isLogin) {
-                success = await login(formData.email, formData.password, 'partner');
+                result = await login(formData.email, formData.password, 'partner') as any;
             } else {
-                success = await signup(formData.name, formData.email, formData.password, formData.phone, 'partner');
+                result = await signup(formData.name, formData.email, formData.password, formData.phone, 'partner') as any;
             }
 
-            if (success) {
+            if (result.success) {
                 router.push('/dashboard/partner');
             } else {
-                setError(isLogin ? 'Invalid email or password.' : 'Signup failed. Email might be in use.');
+                setError(result.error || (isLogin ? 'Invalid email or password.' : 'Signup failed.'));
             }
         } catch (err) {
             setError('An unexpected error occurred. Please try again.');
