@@ -89,23 +89,43 @@ export async function signup(
 
 export async function updateProfile(email: string, data: Partial<User>): Promise<AuthResult> {
     try {
-        const user = await prisma.user.update({
-            where: { email },
-            data: {
-                ...data,
-                updatedAt: new Date(),
-            },
+        // Start a transaction to ensure consistency if we need to update multiple tables
+        const result = await prisma.$transaction(async (tx) => {
+            const user = await tx.user.update({
+                where: { email },
+                data: {
+                    ...data,
+                    updatedAt: new Date(),
+                },
+            });
+
+            // If user is a partner and photo is updated, sync with Worker profile
+            if (user.role === 'partner' && data.photo) {
+                // Find worker linked to this user
+                const worker = await tx.worker.findUnique({
+                    where: { userId: user.id } as any,
+                });
+
+                if (worker) {
+                    await tx.worker.update({
+                        where: { id: worker.id },
+                        data: { photo: data.photo },
+                    });
+                }
+            }
+
+            return user;
         });
 
         return {
             success: true,
             user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role as UserRole,
-                phone: user.phone || '',
-                photo: user.photo || undefined,
+                id: result.id,
+                name: result.name,
+                email: result.email,
+                role: result.role as UserRole,
+                phone: result.phone || '',
+                photo: result.photo || undefined,
             }
         };
     } catch (error: any) {

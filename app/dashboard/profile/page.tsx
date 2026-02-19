@@ -23,7 +23,8 @@ export default function ProfilePage() {
         name: '',
         phone: '',
         email: '',
-        role: ''
+        role: '',
+        photo: ''
     });
 
     const [quickResponse, setQuickResponse] = useState(false);
@@ -38,7 +39,8 @@ export default function ProfilePage() {
                 name: user.name,
                 phone: user.phone || '',
                 email: user.email,
-                role: user.role
+                role: user.role,
+                photo: user.photo || '' // Default or empty
             });
 
             // Fetch bookings
@@ -64,7 +66,8 @@ export default function ProfilePage() {
                 name: formData.name,
                 phone: formData.phone,
                 email: formData.email,
-                role: formData.role as any
+                role: formData.role as any,
+                photo: formData.photo
             });
             setIsEditing(false);
         }
@@ -129,74 +132,109 @@ export default function ProfilePage() {
                                     </button>
                                 </div>
 
-                                <div className="space-y-6">
-                                    <div className="grid sm:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">
-                                                {t('auth.name')}
-                                            </label>
-                                            {isEditing ? (
+                                <div className="flex flex-col md:flex-row gap-8">
+                                    {/* Profile Picture Section */}
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-neutral-700 shadow-lg">
+                                            <img
+                                                src={isEditing ? formData.photo : (user.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`)}
+                                                alt="Profile"
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    // Fallback if image fails
+                                                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`;
+                                                }}
+                                            />
+                                        </div>
+                                        {isEditing && (
+                                            <div className="w-full max-w-xs">
+                                                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">
+                                                    Profile Photo URL
+                                                </label>
                                                 <input
                                                     type="text"
-                                                    value={formData.name}
-                                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                    className="w-full p-2 border border-neutral-200 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white dark:bg-neutral-700 text-neutral-800 dark:text-white"
+                                                    value={formData.photo}
+                                                    onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
+                                                    placeholder="https://..."
+                                                    className="w-full p-2 text-sm border border-neutral-200 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white dark:bg-neutral-700 text-neutral-800 dark:text-white"
                                                 />
-                                            ) : (
-                                                <div className="text-neutral-800 dark:text-white font-medium text-lg border-b border-neutral-100 dark:border-neutral-700 pb-2">
-                                                    {user.name}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">
-                                                {t('profile.role')}
-                                            </label>
-                                            <div className="text-neutral-800 dark:text-white font-medium text-lg border-b border-neutral-100 dark:border-neutral-700 pb-2 capitalize">
-                                                {user.role}
+                                                <p className="text-[10px] text-neutral-400 mt-1">
+                                                    Paste a direct image URL.
+                                                </p>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
 
-                                    <div className="grid sm:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">
-                                                {t('auth.email')}
-                                            </label>
-                                            <div className="flex items-center gap-3 text-neutral-800 dark:text-white border-b border-neutral-100 dark:border-neutral-700 pb-2">
-                                                <Mail className="w-4 h-4 text-neutral-400" />
-                                                {user.email}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">
-                                                {t('auth.phone')}
-                                            </label>
-                                            {isEditing ? (
-                                                <div className="flex items-center gap-3">
-                                                    <Phone className="w-4 h-4 text-neutral-400" />
+                                    {/* Details Form */}
+                                    <div className="flex-1 space-y-6">
+                                        <div className="grid sm:grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">
+                                                    {t('auth.name')}
+                                                </label>
+                                                {isEditing ? (
                                                     <input
                                                         type="text"
-                                                        value={formData.phone}
-                                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                        value={formData.name}
+                                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                                         className="w-full p-2 border border-neutral-200 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white dark:bg-neutral-700 text-neutral-800 dark:text-white"
                                                     />
+                                                ) : (
+                                                    <div className="text-neutral-800 dark:text-white font-medium text-lg border-b border-neutral-100 dark:border-neutral-700 pb-2">
+                                                        {user.name}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">
+                                                    {t('profile.role')}
+                                                </label>
+                                                <div className="text-neutral-800 dark:text-white font-medium text-lg border-b border-neutral-100 dark:border-neutral-700 pb-2 capitalize">
+                                                    {user.role}
                                                 </div>
-                                            ) : (
-                                                <div className="flex items-center gap-3 text-neutral-800 dark:text-white border-b border-neutral-100 dark:border-neutral-700 pb-2">
-                                                    <Phone className="w-4 h-4 text-neutral-400" />
-                                                    {user.phone || 'Not provided'}
-                                                </div>
-                                            )}
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {isEditing && (
-                                        <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-700">
-                                            <button onClick={() => setIsEditing(false)} className="px-4 py-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg font-medium transition-colors">Cancel</button>
-                                            <button onClick={handleSave} className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/30">Save Changes</button>
+                                        <div className="grid sm:grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">
+                                                    {t('auth.email')}
+                                                </label>
+                                                <div className="flex items-center gap-3 text-neutral-800 dark:text-white border-b border-neutral-100 dark:border-neutral-700 pb-2">
+                                                    <Mail className="w-4 h-4 text-neutral-400" />
+                                                    {user.email}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">
+                                                    {t('auth.phone')}
+                                                </label>
+                                                {isEditing ? (
+                                                    <div className="flex items-center gap-3">
+                                                        <Phone className="w-4 h-4 text-neutral-400" />
+                                                        <input
+                                                            type="text"
+                                                            value={formData.phone}
+                                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                            className="w-full p-2 border border-neutral-200 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white dark:bg-neutral-700 text-neutral-800 dark:text-white"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-3 text-neutral-800 dark:text-white border-b border-neutral-100 dark:border-neutral-700 pb-2">
+                                                        <Phone className="w-4 h-4 text-neutral-400" />
+                                                        {user.phone || 'Not provided'}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    )}
+
+                                        {isEditing && (
+                                            <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-700">
+                                                <button onClick={() => setIsEditing(false)} className="px-4 py-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg font-medium transition-colors">Cancel</button>
+                                                <button onClick={handleSave} className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/30">Save Changes</button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </motion.div>
 
@@ -230,8 +268,8 @@ export default function ProfilePage() {
                                                     </div>
                                                 </div>
                                                 <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                                        booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                            'bg-gray-100 text-gray-700'
+                                                    booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                        'bg-gray-100 text-gray-700'
                                                     }`}>
                                                     {booking.status}
                                                 </div>
