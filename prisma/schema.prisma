@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,7 +11,7 @@ model Worker {
   id            String   @id @default(cuid())
   name          String
   photo         String
-  category      String   // ServiceCategory
+  category      String
   rating        Float
   reviewCount   Int
   dailyWage     Int
@@ -32,7 +29,8 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String
-  role      String   // 'customer' | 'partner'
+  role      String
+  password  String
   phone     String?
   photo     String?
   createdAt DateTime @default(now())
@@ -40,7 +38,7 @@ model User {
 }
 
 model Booking {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   customerId  String
   workerId    String
   workerName  String
@@ -52,7 +50,7 @@ model Booking {
   dailyWage   Int
   totalDays   Int
   totalAmount Int
-  status      String   @default("pending")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      String    @default("pending")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

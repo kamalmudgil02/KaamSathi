@@ -12,21 +12,30 @@ export const metadata: Metadata = {
     description: "Connect with skilled workers in your area for all your home service needs",
 };
 
+import { ThemeProvider } from "@/components/ThemeProvider";
+
 export default function RootLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
             <body className={inter.className}>
-                <AuthProvider>
-                    <LanguageProvider>
-                        <BookingProvider>
-                            {children}
-                        </BookingProvider>
-                    </LanguageProvider>
-                </AuthProvider>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                >
+                    <AuthProvider>
+                        <LanguageProvider>
+                            <BookingProvider>
+                                {children}
+                            </BookingProvider>
+                        </LanguageProvider>
+                    </AuthProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

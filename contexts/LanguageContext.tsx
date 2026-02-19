@@ -80,6 +80,18 @@ const translations: Translations = {
     'common.loading': { en: 'Loading...', hi: 'लोड हो रहा है...' },
     'common.error': { en: 'Something went wrong', hi: 'कुछ गलत हो गया' },
     'common.close': { en: 'Close', hi: 'बंद करें' },
+
+    // Profile & Settings
+    'profile.title': { en: 'My Profile', hi: 'मेरी प्रोफाइल' },
+    'profile.details': { en: 'Personal Details', hi: 'व्यक्तिगत विवरण' },
+    'profile.settings': { en: 'Settings', hi: 'सेटिंग्स' },
+    'profile.language': { en: 'Language', hi: 'भाषा' },
+    'profile.save': { en: 'Save Changes', hi: 'परिवर्तन सहेजें' },
+    'profile.edit': { en: 'Edit Profile', hi: 'प्रोफाइल संपादित करें' },
+    'profile.role': { en: 'Role', hi: 'भूमिका' },
+    'profile.joined': { en: 'Joined', hi: 'शामिल हुए' },
+    'settings.notifications': { en: 'Notifications', hi: 'सूचनाएं' },
+    'settings.theme': { en: 'Theme', hi: 'थीम' },
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
