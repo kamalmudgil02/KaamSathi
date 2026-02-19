@@ -17,7 +17,7 @@ export async function getWorkerSettings(email: string) {
         // We need a way to link them. For now, let's assume if role is 'partner', we look for a worker with userId = user.id
 
         const worker = await prisma.worker.findUnique({
-            where: { userId: user.id } as any,
+            where: { userId: user.id },
         });
 
         if (!worker) {
@@ -49,7 +49,7 @@ export async function toggleQuickResponse(email: string, status: boolean) {
         // Let's try to update.
 
         let worker = await prisma.worker.findUnique({
-            where: { userId: user.id } as any,
+            where: { userId: user.id },
         });
 
         // Loophole: If worker exists but userId is null?
@@ -65,7 +65,7 @@ export async function toggleQuickResponse(email: string, status: boolean) {
 
         await prisma.worker.update({
             where: { id: worker.id },
-            data: { quickResponse: status } as any,
+            data: { quickResponse: status },
         });
 
         revalidatePath('/dashboard/profile');
