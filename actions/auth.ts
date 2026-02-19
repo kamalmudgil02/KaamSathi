@@ -59,26 +59,52 @@ export async function signup(
 
         if (existingUser) return { success: false, error: 'Email already registered.' };
 
-        const user = await prisma.user.create({
-            data: {
-                name,
-                email,
-                password: hashPassword(password),
-                phone,
-                role,
-                photo: '/placeholder-worker.jpg', // Default photo
-            },
+        const result = await prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+                data: {
+                    name,
+                    email,
+                    password: hashPassword(password),
+                    phone,
+                    role,
+                    photo: '/placeholder-worker.jpg', // Default photo
+                },
+            });
+
+            // If partner, create a default Worker profile
+            if (role === 'partner') {
+                await tx.worker.create({
+                    data: {
+                        userId: user.id,
+                        name: user.name,
+                        photo: user.photo || '/placeholder-worker.jpg',
+                        category: 'electrician', // Default category, user should update this later
+                        dailyWage: 500,
+                        experience: 1,
+                        location: 'New Delhi',
+                        description: 'New professional available for work.',
+                        descriptionHi: 'नया पेशेवर काम के लिए उपलब्ध है।',
+                        rating: 5.0,
+                        reviewCount: 0,
+                        available: true,
+                        quickResponse: true,
+                        skills: ['General'],
+                    },
+                });
+            }
+
+            return user;
         });
 
         return {
             success: true,
             user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role as UserRole,
-                phone: user.phone || '',
-                photo: user.photo || undefined,
+                id: result.id,
+                name: result.name,
+                email: result.email,
+                role: result.role as UserRole,
+                phone: result.phone || '',
+                photo: result.photo || undefined,
             }
         };
     } catch (error: any) {
