@@ -82,8 +82,4 @@ export async function createBooking(data: {
         console.error('Error creating booking:', error);
         return { success: false, error: error.message || 'Failed to create booking' };
     }
-} catch (error: any) {
-    console.error('Error fetching bookings:', error);
-    return { success: false, error: error.message, bookings: [] };
-}
 }

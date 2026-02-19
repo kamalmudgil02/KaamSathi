@@ -215,7 +215,6 @@ export default function BookingModal() {
                                     </div>
                                 </div>
 
-                                {/* Action Buttons */}
                                 <button
                                     onClick={closeBookingModal}
                                     disabled={isSubmitting}
@@ -237,12 +236,10 @@ export default function BookingModal() {
                                     )}
                                 </motion.button>
                             </div>
-                            </div>
                         )}
-                </motion.div>
-        </>
-    )
-}
-        </AnimatePresence >
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
     );
 }
