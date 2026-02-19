@@ -122,10 +122,15 @@ export default function CustomerLoginPage() {
                             )}
 
                             <div>
-                                <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 mb-2">
-                                    <Lock className="w-4 h-4" />
-                                    {t('auth.password')}
-                                </label>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-neutral-700">
+                                        <Lock className="w-4 h-4" />
+                                        {t('auth.password')}
+                                    </label>
+                                    <a href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-500 hover:underline">
+                                        Forgot Password?
+                                    </a>
+                                </div>
                                 <input
                                     type="password"
                                     value={formData.password}
