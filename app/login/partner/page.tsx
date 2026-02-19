@@ -21,18 +21,27 @@ export default function PartnerLoginPage() {
         phone: '',
     });
 
+    const [error, setError] = useState('');
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
 
         let success = false;
-        if (isLogin) {
-            success = await login(formData.email, formData.password, 'partner');
-        } else {
-            success = await signup(formData.name, formData.email, formData.password, formData.phone, 'partner');
-        }
+        try {
+            if (isLogin) {
+                success = await login(formData.email, formData.password, 'partner');
+            } else {
+                success = await signup(formData.name, formData.email, formData.password, formData.phone, 'partner');
+            }
 
-        if (success) {
-            router.push('/dashboard/partner');
+            if (success) {
+                router.push('/dashboard/partner');
+            } else {
+                setError(isLogin ? 'Invalid email or password.' : 'Signup failed. Email might be in use.');
+            }
+        } catch (err) {
+            setError('An unexpected error occurred. Please try again.');
         }
     };
 
@@ -56,6 +65,13 @@ export default function PartnerLoginPage() {
                                 {isLogin ? 'Welcome back, Partner!' : 'Join as a Worker'}
                             </p>
                         </div>
+
+                        {/* Error Message */}
+                        {error && (
+                            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm text-center border border-red-200">
+                                {error}
+                            </div>
+                        )}
 
                         {/* Form */}
                         <form onSubmit={handleSubmit} className="space-y-4">
