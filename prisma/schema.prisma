@@ -18,6 +18,8 @@ model Worker {
   experience    Int
   location      String
   available     Boolean  @default(true)
+  quickResponse Boolean  @default(true)
+  userId        String?  @unique
   skills        String[]
   description   String
   descriptionHi String
