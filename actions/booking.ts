@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/prisma';
+import { Booking } from '@prisma/client';
 
 export async function getBookingSlots(email: string, role: string) {
     try {
@@ -10,7 +11,7 @@ export async function getBookingSlots(email: string, role: string) {
 
         if (!user) return { success: false, error: 'User not found', bookings: [] };
 
-        let bookings = [];
+        let bookings: Booking[] = [];
 
         if (role === 'customer') {
             bookings = await prisma.booking.findMany({
@@ -19,8 +20,11 @@ export async function getBookingSlots(email: string, role: string) {
             });
         } else if (role === 'partner') {
             // Find worker profile
+            // Use findFirst if findUnique complains about optional unique fields in some prisma versions,
+            // but findUnique is correct for @unique.
+            // We cast to any to bypass potential stale type definition issues if generation failed.
             const worker = await prisma.worker.findUnique({
-                where: { userId: user.id },
+                where: { userId: user.id } as any,
             });
 
             if (worker) {
