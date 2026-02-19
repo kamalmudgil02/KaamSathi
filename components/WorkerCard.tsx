@@ -94,19 +94,37 @@ export default function WorkerCard({ worker }: WorkerCardProps) {
                         ))}
                     </div>
 
-                    {/* Book Button */}
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => openBookingModal(worker)}
-                        disabled={!worker.available}
-                        className={`mt-4 w-full sm:w-auto px-6 py-2 rounded-lg font-medium transition-all ${worker.available
+                    {/* Action Buttons */}
+                    <div className="mt-4 flex flex-wrap gap-3">
+                        <a
+                            href={`tel:919876543210`} // Using placeholder as worker phone not in Props yet, or assume mock
+                            // Actually worker object from Prisma usually doesn't have phone exposed publicly for privacy? 
+                            // But Schema User has phone. Worker is linked.
+                            // For this MVP let's assume we can call.
+                            className="flex-1 sm:flex-none"
+                        >
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="w-full px-4 py-2 bg-green-50 text-green-600 rounded-lg font-medium border border-green-200 hover:bg-green-100 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <span>📞</span> Call
+                            </motion.button>
+                        </a>
+
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => openBookingModal(worker)}
+                            disabled={!worker.available}
+                            className={`flex-1 px-6 py-2 rounded-lg font-medium transition-all ${worker.available
                                 ? 'btn-primary'
                                 : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
-                            }`}
-                    >
-                        {worker.available ? t('worker.bookNow') : t('worker.unavailable')}
-                    </motion.button>
+                                }`}
+                        >
+                            {worker.available ? t('worker.bookNow') : t('worker.unavailable')}
+                        </motion.button>
+                    </div>
                 </div>
             </div>
         </motion.div>

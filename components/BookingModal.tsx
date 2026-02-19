@@ -18,41 +18,60 @@ export default function BookingModal() {
     const [address, setAddress] = useState('');
     const [days, setDays] = useState(1);
     const [isConfirmed, setIsConfirmed] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     if (!selectedWorker) return null;
 
     const totalAmount = selectedWorker.dailyWage * days;
 
-    const handleConfirmBooking = () => {
+    const handleConfirmBooking = async () => {
         if (!startDate || !address || !user) return;
 
-        const booking: Booking = {
-            id: Math.random().toString(36).substr(2, 9),
-            customerId: user.id,
-            workerId: selectedWorker.id,
-            workerName: selectedWorker.name,
-            workerPhoto: selectedWorker.photo,
-            category: selectedWorker.category,
-            startDate,
-            address,
-            dailyWage: selectedWorker.dailyWage,
-            totalDays: days,
-            totalAmount,
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-        };
+        setIsSubmitting(true);
 
-        addBooking(booking);
-        setIsConfirmed(true);
+        try {
+            // Import dynamically or assume it's imported at top (we will add import)
+            const { createBooking } = await import('@/actions/booking');
 
-        // Close modal after showing success
-        setTimeout(() => {
-            closeBookingModal();
-            setIsConfirmed(false);
-            setStartDate('');
-            setAddress('');
-            setDays(1);
-        }, 2000);
+            const res = await createBooking({
+                customerId: user.id,
+                workerId: selectedWorker.id,
+                workerName: selectedWorker.name,
+                workerPhoto: selectedWorker.photo,
+                category: selectedWorker.category,
+                startDate: startDate,
+                address,
+                dailyWage: selectedWorker.dailyWage,
+                totalDays: days,
+                totalAmount,
+            });
+
+            if (res.success && res.booking) {
+                // Update local context for immediate UI feedback
+                // We map the server booking to the context booking type if needed
+                // But context addBooking expects a Booking object. 
+                // Let's explicitly cast or map as needed.
+                // Actually, res.booking IS a Booking object from Prisma.
+                addBooking(res.booking as unknown as Booking);
+                setIsConfirmed(true);
+
+                // Close modal after showing success
+                setTimeout(() => {
+                    closeBookingModal();
+                    setIsConfirmed(false);
+                    setStartDate('');
+                    setAddress('');
+                    setDays(1);
+                }, 2000);
+            } else {
+                alert(res.error || 'Booking failed');
+            }
+        } catch (error) {
+            console.error('Booking failed', error);
+            alert('An unexpected error occurred');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -197,28 +216,33 @@ export default function BookingModal() {
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="flex gap-3 mt-6">
-                                    <button
-                                        onClick={closeBookingModal}
-                                        className="flex-1 px-6 py-3 border-2 border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors"
-                                    >
-                                        {t('booking.cancel')}
-                                    </button>
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={handleConfirmBooking}
-                                        disabled={!startDate || !address}
-                                        className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {t('booking.confirm')}
-                                    </motion.button>
-                                </div>
+                                <button
+                                    onClick={closeBookingModal}
+                                    disabled={isSubmitting}
+                                    className="flex-1 px-6 py-3 border-2 border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors disabled:opacity-50"
+                                >
+                                    {t('booking.cancel')}
+                                </button>
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={handleConfirmBooking}
+                                    disabled={!startDate || !address || isSubmitting}
+                                    className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isSubmitting ? (
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        t('booking.confirm')
+                                    )}
+                                </motion.button>
+                            </div>
                             </div>
                         )}
-                    </motion.div>
-                </>
-            )}
-        </AnimatePresence>
+                </motion.div>
+        </>
+    )
+}
+        </AnimatePresence >
     );
 }
