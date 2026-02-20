@@ -3,7 +3,7 @@
 import React from 'react';
 import { Worker } from '@/types';
 import { motion } from 'framer-motion';
-import { Star, MapPin, Briefcase, IndianRupee } from 'lucide-react';
+import { Star, MapPin, Briefcase, IndianRupee, Zap } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBooking } from '@/contexts/BookingContext';
 import Image from 'next/image';
@@ -41,7 +41,15 @@ export default function WorkerCard({ worker }: WorkerCardProps) {
                 <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                         <div>
-                            <h3 className="text-xl font-bold text-neutral-800">{worker.name}</h3>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="text-xl font-bold text-neutral-800">{worker.name}</h3>
+                                {worker.quickResponse && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full border border-yellow-300">
+                                        <Zap className="w-3 h-3" />
+                                        Quick Response
+                                    </span>
+                                )}
+                            </div>
 
                             {/* Rating */}
                             <div className="flex items-center gap-2 mt-1">

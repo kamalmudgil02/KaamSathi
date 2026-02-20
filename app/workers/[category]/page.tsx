@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
@@ -11,18 +11,22 @@ import BookingModal from '@/components/BookingModal';
 import LottiePlayer from '@/components/LottiePlayer';
 import { getWorkers } from '@/actions/getWorkers';
 import { ServiceCategory } from '@/types';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Zap, X } from 'lucide-react';
 import Link from 'next/link';
 
 export default function WorkersPage() {
     const params = useParams();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { isAuthenticated, user } = useAuth();
     const { t } = useLanguage();
-    const category = params.category as string; // prisma stores category as string
+    const category = params.category as string;
 
     const [workers, setWorkers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [quickResponseFilter, setQuickResponseFilter] = useState(
+        searchParams.get('quickResponse') === 'true'
+    );
 
     useEffect(() => {
         if (!isAuthenticated || user?.role !== 'customer') {
@@ -35,7 +39,6 @@ export default function WorkersPage() {
             if (category) {
                 try {
                     setLoading(true);
-                    // Pass category to server action. We need to cast it to string because useParams can return string | string[]
                     const data = await getWorkers(Array.isArray(category) ? category[0] : category);
                     setWorkers(data);
                 } catch (error) {
@@ -45,13 +48,18 @@ export default function WorkersPage() {
                 }
             }
         };
-
         fetchData();
     }, [category]);
 
     if (!isAuthenticated || user?.role !== 'customer') {
         return null;
     }
+
+    const displayedWorkers = quickResponseFilter
+        ? workers.filter(w => w.quickResponse === true)
+        : workers;
+
+    const quickCount = workers.filter(w => w.quickResponse === true).length;
 
     return (
         <div className="min-h-screen bg-neutral-50">
@@ -70,7 +78,7 @@ export default function WorkersPage() {
                 </Link>
 
                 {/* Header with Lottie Animation */}
-                <div className="grid md:grid-cols-2 gap-8 items-center mb-12">
+                <div className="grid md:grid-cols-2 gap-8 items-center mb-8">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -82,7 +90,9 @@ export default function WorkersPage() {
                             {t(`service.${category}.desc`)}
                         </p>
                         <div className="flex items-center gap-4 text-neutral-600">
-                            <span className="font-medium">{loading ? 'Loading...' : `${workers.length} workers available`}</span>
+                            <span className="font-medium">
+                                {loading ? 'Loading...' : `${displayedWorkers.length} workers available`}
+                            </span>
                             <span>•</span>
                             <span>Verified professionals</span>
                         </div>
@@ -92,13 +102,31 @@ export default function WorkersPage() {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                     >
-                        {/* 
-                            LottiePlayer expects specific animation names. 
-                            If category name from DB doesn't match exactly update the component or mapping. 
-                            For now passing category as is. 
-                        */}
                         <LottiePlayer animationName={category as ServiceCategory} className="w-full max-w-md mx-auto" />
                     </motion.div>
+                </div>
+
+                {/* Filter Bar */}
+                <div className="flex flex-wrap gap-3 mb-6">
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setQuickResponseFilter(!quickResponseFilter)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm border-2 transition-all duration-200 ${quickResponseFilter
+                                ? 'bg-yellow-400 border-yellow-500 text-yellow-900 shadow-md'
+                                : 'bg-white border-neutral-200 text-neutral-600 hover:border-yellow-400 hover:text-yellow-600'
+                            }`}
+                    >
+                        <Zap className="w-4 h-4" />
+                        <span>Quick Response</span>
+                        {quickCount > 0 && (
+                            <span className={`px-1.5 py-0.5 text-xs rounded-full font-bold ${quickResponseFilter ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-700'
+                                }`}>
+                                {quickCount}
+                            </span>
+                        )}
+                        {quickResponseFilter && <X className="w-3 h-3 ml-1" />}
+                    </motion.button>
                 </div>
 
                 {/* Workers List */}
@@ -107,13 +135,28 @@ export default function WorkersPage() {
                         <div className="flex justify-center py-12">
                             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
                         </div>
-                    ) : workers.length === 0 ? (
+                    ) : displayedWorkers.length === 0 ? (
                         <div className="card text-center py-12">
-                            <div className="text-6xl mb-4">😔</div>
-                            <p className="text-xl text-neutral-600">No workers available in this category</p>
+                            <div className="text-6xl mb-4">
+                                {quickResponseFilter ? '⚡' : '😔'}
+                            </div>
+                            <p className="text-xl text-neutral-600">
+                                {quickResponseFilter
+                                    ? 'No workers with Quick Response available right now'
+                                    : 'No workers available in this category'
+                                }
+                            </p>
+                            {quickResponseFilter && (
+                                <button
+                                    onClick={() => setQuickResponseFilter(false)}
+                                    className="mt-4 text-primary-600 underline text-sm"
+                                >
+                                    Show all workers
+                                </button>
+                            )}
                         </div>
                     ) : (
-                        workers.map((worker, index) => (
+                        displayedWorkers.map((worker, index) => (
                             <motion.div
                                 key={worker.id}
                                 initial={{ opacity: 0, y: 20 }}

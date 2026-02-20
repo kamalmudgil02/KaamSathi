@@ -39,9 +39,11 @@ export interface Worker {
     experience: number; // in years
     location: string;
     available: boolean;
+    quickResponse: boolean;
     skills: string[];
     description: string;
     descriptionHi: string;
+    userId?: string;
 }
 
 // Booking Types
